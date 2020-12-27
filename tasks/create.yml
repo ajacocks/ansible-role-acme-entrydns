@@ -73,7 +73,7 @@
       csr: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
       dest: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
       chain_dest: "{{ letsencrypt_certs_dir }}/chain_{{ domain_name }}.crt"
-      fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}"
+      fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}.crt"
       data: "{{ acme_challenge }}"
     register: challenge_complete
 

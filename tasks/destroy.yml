@@ -7,4 +7,42 @@
     private_key_src: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
     certificate: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
 
+- name: create directories to store revoked certs and keys
+  file:
+    path: "{{ letsencrypt_dir }}/{{ item }}/revoked"
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+  loop:
+    - keys
+    - csrs
+    - certs
+
+- name: set a timestamp
+  set_fact:
+    revoke_stamp: "{{ ansible_date_time.iso8601_basic_short }}"
+
+- name: move csrs, certs, and keys to revoked
+  shell: |
+    if [ -f {{ item.0 }} ]; then
+      mv {{ item.0 }} {{ item.1 }}
+    else
+      echo skipping non-existant {{ item.0 }}
+    fi
+  loop: "{{ list_one|zip(list_two)|list }}"
+  vars:
+    list_one:
+      - "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
+      - "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
+      - "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
+      - "{{ letsencrypt_certs_dir }}/chain_{{ domain_name }}.crt"
+      - "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}.crt"
+    list_two:
+      - "{{ letsencrypt_keys_dir }}/revoked/{{ domain_name }}.key-{{ revoke_stamp }}"
+      - "{{ letsencrypt_csrs_dir }}/revoked/{{ domain_name }}.csr-{{ revoke_stamp }}"
+      - "{{ letsencrypt_certs_dir }}/revoked/{{ domain_name }}.crt-{{ revoke_stamp }}"
+      - "{{ letsencrypt_certs_dir }}/revoked/chain_{{ domain_name }}.crt-{{ revoke_stamp }}"
+      - "{{ letsencrypt_certs_dir }}/revoked/fullchain_{{ domain_name }}.crt-{{ revoke_stamp }}"
+
 ...
