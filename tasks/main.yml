@@ -62,7 +62,7 @@
       method: PUT
       body: "TXT={{ item.1 }}"
     loop: "{{ acme_challenge.challenge_data_dns | dict2items | subelements('value') }}"
-  
+
   - name: "Complete Let's Encrypt challenges"
     community.crypto.acme_certificate:
       acme_directory: "{{ acme_directory }}"
@@ -76,17 +76,17 @@
       fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}"
       data: "{{ acme_challenge }}"
     register: challenge_complete
-  
+
   - debug:
       var: challenge_complete
-  
+
   #- name: Check whether the account exists and is accessible with the given account key
   #  acme_account_info:
   #    acme_directory: "{{ acme_directory }}"
   #    acme_version: "{{ acme_version }}"
   #    account_key_src: "{{ letsencrypt_account_key }}"
   #  register: account_data
-  
+
   #- debug:
   #    var: account_data
 
