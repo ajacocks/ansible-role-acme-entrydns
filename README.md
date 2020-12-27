@@ -27,7 +27,8 @@ Alternately, you may use any other ACME provder supported by the Ansible communi
 
 ## Example main.yml
 
-`---
+```
+---
 
 - hosts: localhost
   become: yes
@@ -42,7 +43,8 @@ Alternately, you may use any other ACME provder supported by the Ansible communi
   roles:
     - acme-entrydns
 
-...`
+...
+```
 
 That's about it. Please let me know if you have any issues.
 
