@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  role_name: acme-entrydns
+  author: Alexander Jacocks
+  description: a simple role that gets ACME certificates via DNS challenges against EntryDNS
+  company: Red Hat
+
+collections:
+  - community.crypto
+
+...

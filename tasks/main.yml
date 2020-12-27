@@ -1,0 +1,121 @@
+---
+# ansible-galaxy collection install community.crypto
+- name: "Create required directories in /etc/letsencrypt"
+  file:
+    path: "/etc/letsencrypt/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: u=rwx,g=x,o=x
+  with_items:
+  - account
+  - certs
+  - csrs
+  - keys
+
+- name: "Generate a Let's Encrypt account key"
+  openssl_privatekey:
+    path: "{{ letsencrypt_account_key }}"
+    size: 4096
+    type: RSA
+
+- name: "Generate a Let's Encrypt private key"
+  openssl_privatekey:
+    path: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
+    size: 4096
+    type: RSA
+
+- name: "Generate Let's Encrypt CSR"
+  community.crypto.openssl_csr:
+    path: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
+    privatekey_path: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
+    common_name: "{{ cert_cn }}"
+#    country_name: "{{ cert_c }}"
+#    email_address: "{{ acme_email }}"
+#    locality_name: "{{ cert_l }}"
+#    organization_name: "{{ cert_o }}"
+#    organizational_unit_name: "{{ cert_ou }}"
+#    state_or_province_name: "{{ cert_st }}"
+
+- name: "Begin Let's Encrypt challenges"
+  community.crypto.acme_certificate:
+    acme_directory: "{{ acme_directory }}"
+    acme_version: "{{ acme_version }}"
+    account_key_src: "{{ letsencrypt_account_key }}"
+    account_email: "{{ acme_email }}"
+    terms_agreed: 1
+    challenge: "{{ acme_challenge_type }}"
+    csr: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
+    dest: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
+    fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}.crt"
+    remaining_days: "{{ acme_days }}"
+  register: acme_challenge
+
+- debug:
+    var: acme_challenge
+
+- name: "/issue/renew Let's Encrypt certificate"
+  block:
+  - name: "generate entrydns PUT"
+    uri:
+      url: "{{ dns_url }}/{{ dns_record_token }}"
+      method: PUT
+      body: "TXT={{ item.1 }}"
+    loop: "{{ acme_challenge.challenge_data_dns | dict2items | subelements('value') }}"
+  
+  - name: "Complete Let's Encrypt challenges"
+    community.crypto.acme_certificate:
+      acme_directory: "{{ acme_directory }}"
+      acme_version: "{{ acme_version }}"
+      account_key_src: "{{ letsencrypt_account_key }}"
+      account_email: "{{ acme_email }}"
+      challenge: "{{ acme_challenge_type }}"
+      csr: "{{ letsencrypt_csrs_dir }}/{{ domain_name }}.csr"
+      dest: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
+      chain_dest: "{{ letsencrypt_certs_dir }}/chain_{{ domain_name }}.crt"
+      fullchain_dest: "{{ letsencrypt_certs_dir }}/fullchain_{{ domain_name }}"
+      data: "{{ acme_challenge }}"
+    register: challenge_complete
+  
+  - debug:
+      var: challenge_complete
+  
+  #- name: Check whether the account exists and is accessible with the given account key
+  #  acme_account_info:
+  #    acme_directory: "{{ acme_directory }}"
+  #    acme_version: "{{ acme_version }}"
+  #    account_key_src: "{{ letsencrypt_account_key }}"
+  #  register: account_data
+  
+  #- debug:
+  #    var: account_data
+
+  - name: Get information on generated certificate
+    community.crypto.x509_certificate_info:
+      path: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
+    register: cert_info
+
+  - name: convert dates
+    set_fact:
+      date_from: "{{ cert_info.not_before | to_datetime( '%Y%m%d%H%M%SZ' ) }} "
+      date_to: "{{ cert_info.not_after | to_datetime( '%Y%m%d%H%M%SZ' ) }} "
+
+  - name: Display information on generated cetificate
+    debug:
+      msg:
+      - "Generated a certificate at '{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt'."
+      - "Certificate info:"
+      - "  common name:"
+      - "    {{ cert_info.subject.commonName }}"
+      - "  valid dates:"
+      - "    from: {{ date_from }}UTC"
+      - "    to:   {{ date_to }}UTC"
+
+  when: acme_challenge.authorizations is defined
+
+- name: Display information on not renewing the cert
+  debug:
+    msg: "Not renewing the certificate for '{{ cert_cn }}' as it is still valid for {{ acme_challenge.cert_days }} days."
+  when: acme_challenge.authorizations is not defined
+
+...

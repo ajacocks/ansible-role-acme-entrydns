@@ -1,0 +1,24 @@
+---
+
+acme_challenge_type: dns-01
+# staging
+acme_directory: https://acme-staging-v02.api.letsencrypt.org/directory
+acme_days: 10
+acme_version: 2
+ansible_role_collections_list:
+  - community.crypto
+ansible_roles_list: []
+cert_c: "XX"
+cert_l: "Default City"
+cert_o: "Default Company Ltd"
+cert_ou: "Default Unit"
+cert_st: "Default Province"
+dns_url: "https://entrydns.net/records/modify"
+letsencrypt_dir: /etc/letsencrypt
+letsencrypt_keys_dir: /etc/letsencrypt/keys
+letsencrypt_csrs_dir: /etc/letsencrypt/csrs
+letsencrypt_certs_dir: /etc/letsencrypt/certs
+letsencrypt_account_key: /etc/letsencrypt/account/account.key
+openssl_cnf: /etc/pki/tls/openssl.cnf
+
+...
