@@ -1,0 +1,10 @@
+---
+
+- name: Revoke certificate with account key
+  community.crypto.acme_certificate_revoke:
+    acme_directory: "{{ acme_directory }}"
+    acme_version: "{{ acme_version }}"
+    private_key_src: "{{ letsencrypt_keys_dir }}/{{ domain_name }}.key"
+    certificate: "{{ letsencrypt_certs_dir }}/{{ domain_name }}.crt"
+
+...
