@@ -12,8 +12,8 @@
     path: "{{ letsencrypt_dir }}/{{ item }}/revoked"
     state: directory
     mode: "0700"
-    owner: root
-    group: root
+    owner: "{{ letsencrypt_dir_owner }}"
+    group: "{{ letsencrypt_dir_group }}"
   loop:
     - keys
     - csrs

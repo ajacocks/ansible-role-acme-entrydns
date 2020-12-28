@@ -1,11 +1,11 @@
 ---
 # ansible-galaxy collection install community.crypto
-- name: "Create required directories in /etc/letsencrypt"
+- name: "Create required directories in {{ letsencrypt_dir }}"
   file:
-    path: "/etc/letsencrypt/{{ item }}"
+    path: "{{ letsencrypt_dir }}/{{ item }}"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ letsencrypt_dir_owner }}"
+    group: "{{ letsencrypt_dir_owner }}"
     mode: u=rwx,g=x,o=x
   with_items:
   - account

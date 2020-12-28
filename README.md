@@ -46,6 +46,19 @@ Alternately, you may use any other ACME provder supported by the Ansible communi
 ...
 ```
 
+Optionally, you can retarget the location of the certificate storage, from the default of `/etc/letsencrypt`, and change the ownership, from the default of `root:root`, with something like:
+
+```
+  vars:
+    - letsencrypt_dir: "~user/letsencrypt"
+    - letsencrypt_dir_owner: user
+    - letsencrypt_dir_group: user
+```
+
+Without any tags being specified, a key will be generated, for an ACME account. Then, a key and SSL CSR are created. That CSR is then sent to your ACME provider, and the provider's challenge is answered, using EntryDNS.
+
+If you add the tag `destroy`, the SSL certificate for the common name is revoked, and the cert key and CSR are moved to `{{ letsencrypt_dir }}/*/revoked`. The account key is left in place.
+
 That's about it. Please let me know if you have any issues.
 
 See `defaults/main.yml` for more possible variables to set.

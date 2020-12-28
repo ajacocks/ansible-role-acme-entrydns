@@ -15,10 +15,12 @@ cert_ou: "Default Unit"
 cert_st: "Default Province"
 dns_url: "https://entrydns.net/records/modify"
 letsencrypt_dir: /etc/letsencrypt
-letsencrypt_keys_dir: /etc/letsencrypt/keys
-letsencrypt_csrs_dir: /etc/letsencrypt/csrs
-letsencrypt_certs_dir: /etc/letsencrypt/certs
-letsencrypt_account_key: /etc/letsencrypt/account/account.key
+letsencrypt_dir_owner: root
+letsencrypt_dir_group: root
+letsencrypt_keys_dir: "{{ letsencrypt_dir }}/keys"
+letsencrypt_csrs_dir: "{{ letsencrypt_dir }}/csrs"
+letsencrypt_certs_dir: "{{ letsencrypt_dir }}/certs"
+letsencrypt_account_key: "{{ letsencrypt_dir }}/account/account.key"
 openssl_cnf: /etc/pki/tls/openssl.cnf
 
 ...
